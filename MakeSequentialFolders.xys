@@ -1,8 +1,41 @@
+// $mode - "int" or "alpha"
+// some little test scripts
+"Create folders with sequential numbers with optional text prefix or suffix"
+	// get prefixText 
+	$prefixText = input("Prefix (start with '[') or Suffix (']')"
+						, "This script creates folders named disc<nn> from start to end #"
+						, 
+						, "s");
+
+	// get start integer
+	$startint = input("Enter Starting #", "This script creates folders named disc<nn> from start to end #", , "s");
+	$endint = input("Enter Ending #", , , "s"); 
+	while ($startint <= $endint) {
+		$newfoldername = "Disc".$startint;
+		$startint++;
+ 		new ("$newfoldername", "dir"); // Create new folder from input
+	}
+
+"Create folders with sequential single letters (ie, a to z)"
+	$curLetter = "A";
+	while (asc($curLetter) <= asc("Z")) {
+ 		new ("$curLetter", "dir"); 				// Create new folder
+		$curLetter = chr(asc($curLetter) + 1);	// increment letter
+	}
+// "Create folders with sequential letters (single letter)"
+//  goto "<xypath>"
+
+// get prefixText 
+// $prefixText = input("Prefix (start with '[') or Suffix (']')"
+					// , "This script creates folders named disc<nn> from start to end #"
+					// , 
+					// , "s");
+
 // get start integer
- $startint = input("Enter Starting #", "This script creates folders named disc<nn> from start to end #", , "s");
- $endint = input("Enter Ending #", , , "s"); 
- while ($startint <= $endint) {
-	 $newfoldername = "Disc".$startint;
- 	 $startint++;
-	 new ("$newfoldername", "dir"); // Create new folder from input
- }
+//  $startint = input("Enter Starting #", "This script creates folders named disc<nn> from start to end #", , "s");
+//  $endint = input("Enter Ending #", , , "s"); 
+//  while ($startint <= $endint) {
+// 	 $newfoldername = "Disc".$startint;
+//  	 $startint++;
+// 	 new ("$newfoldername", "dir"); // Create new folder from input
+//  }
