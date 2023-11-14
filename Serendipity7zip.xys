@@ -1,0 +1,81 @@
+//7-Zip script files
+"Open Zipfile : open"
+   openwith "%programfiles%\7-Zip\7zFM.exe"
+-
+"&Zip files : zip"
+   focus;
+   #113;
+   focus;
+   set $curbase, <clipboard>;
+   strlen $l, $curbase;
+   strpos $p, $curbase, <crlf>;
+   regexreplace $p, $p, "^-1$", "$l";
+   substr $curbase, $curbase, 0, $p;
+   replace $curbase, $curbase," ","_";
+   //Compress file with .zip. Name= base of file.
+   openwith """%programfiles%\7-Zip\7z.exe"" a -tzip ""$curbase.zip"""
+
+"&7z files : 7z"
+   focus;
+   #113;
+   focus;
+   set $curbase, <clipboard>;
+   strlen $l, $curbase;
+   strpos $p, $curbase, <crlf>;
+   regexreplace $p, $p, "^-1$", "$l";
+   substr $curbase, $curbase, 0, $p;
+   replace $curbase, $curbase," ","_";
+   //Compress file with .7z. Name= base of file.
+   openwith """%programfiles%\7-Zip\7z.exe"" a -t7z ""$curbase.7z"""
+
+-
+"&Extract : ext"
+  //Extract content to folder Name= base of zip. aot= If files exist, autonumber new files.
+   openwith "%programfiles%\7-Zip\7z.exe" x -aot
+
+"&Extract (to folder) : extf"
+  //Copy item/pathname to clipboard
+  #101;
+  focus;
+  set $toextract, <clipboard>;
+  focus;
+  //Copy item base to clipboard
+  #113;
+  focus;
+  set $curbase, <clipboard>;
+  //Create new folder based on archive's name
+  new $curbase, dir;
+  set $curpath, <curitem>;
+  goto $toextract;
+  //Extract content to folder Name= base of zip. aot= If files exist, autonumber new files.
+  openwith """%programfiles%\7-Zip\7z.exe"" x -o"$curpath" -aot"
+-
+"Zi&p files (with password) : pzip"
+   focus;
+   #113;
+   focus;
+   set $curbase, <clipboard>;
+   strlen $l, $curbase;
+   strpos $p, $curbase, <crlf>;
+   regexreplace $p, $p, "^-1$", "$l";
+   substr $curbase, $curbase, 0, $p;
+   replace $curbase, $curbase," ","_";
+   set $curbase, "$curbase.zip";
+   input $i, Input password for zipfile, password;
+   //Compress with .zip and password protect archive.
+   openwith """%programfiles%\7-Zip\7z.exe"" a -tzip $curbase -p$i"
+ 
+"7z files (&with password) : p7z"
+   focus;
+   #113;
+   focus;
+   set $curbase, <clipboard>;
+   strlen $l, $curbase;
+   strpos $p, $curbase, <crlf>;
+   regexreplace $p, $p, "^-1$", "$l";
+   substr $curbase, $curbase, 0, $p;
+   replace $curbase, $curbase," ","_";
+   set $curbase, "$curbase.7z";
+   input $i, Input password for zipfile, password;
+  //Compress with 7z and password protect and encrypt archive headers.
+   openwith """%programfiles%\7-Zip\7z.exe"" a -t7z $curbase -p$i -mhe"

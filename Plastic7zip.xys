@@ -1,0 +1,154 @@
+"Zip item(s) : zip"
+   global $g_archive_type;
+   sub "_prepare_compress";
+   $g_archive_type = "zip";
+   sub "_docompress";
+
+"Zip items (1 archive/item) : mzip"
+   // zip each item in its own archive
+   global $g_archive_type, $g_multiplicity;
+   sub "_prepare_compress";
+   $g_archive_type = "zip";
+   
+   $next_sub = $g_multiplicity == "mono" ? "_docompress" : "_docompress_each_first";
+   sub $next_sub;
+   
+"7z item(s) : 7z"
+   global $g_archive_type;
+   sub "_prepare_compress";
+   $g_archive_type = "7z";
+   sub "_docompress";
+
+"7z items (1 archive/item) : m7z"
+   // zip each item in its own archive
+   global $g_archive_type, $g_multiplicity;
+   sub "_prepare_compress";
+   $g_archive_type = "7z";
+   
+   $next_sub = $g_multiplicity == "mono" ? "_docompress" : "_docompress_each_first";
+   sub $next_sub;
+-
+
+"Extract here : extract"
+   global $g_exec, $g_multiplicity;
+   sub "_get_exec";
+   sub "_get_multi_mono";
+   sub "_action_extracthere_" . $g_multiplicity;
+
+"Extract in <subfolder> : extract_subfolder"
+   global $g_multiplicity;
+   sub "_get_exec";
+   sub "_get_multi_mono";
+   sub "_action_extractfolder_" . $g_multiplicity;
+
+
+/** PRIVATE **/
+"_get_exec"
+   global $g_exec;
+   $g_exec = "C:\Program Files\7-Zip\7z.exe"
+
+"_get_multi_mono"
+   global $g_multiplicity;
+   $nb_items = getinfo("CountSelected");
+   end $nb_items <= 0;
+   $g_multiplicity = $nb_items == 1 ? "mono" : "multi";
+
+"_prepare_compress"
+   global $g_exec, $g_items, $g_archive_path, $g_archive_name, $g_multiplicity;
+   sub "_get_exec";
+   sub "_get_multi_mono";
+   $sub_getparams = "_getparams_compress_" . $g_multiplicity;
+   sub $sub_getparams;
+   $g_archive_path = <curpath>;
+   
+"_getparams_compress_mono"
+   global $g_archive_name, $g_items_to_compress;
+   $g_archive_name = <curname>;
+   $g_items_to_compress = <curitem>;
+
+"_getparams_compress_multi"
+   global $g_archive_name, $g_items_to_compress;
+   $g_archive_name = <curfolder>;
+   // What we want --> "file1" "file2"
+   $items = getinfo("SelectedItemsPathNames", """ """);  // We have -> file1" "file2" "
+   substr $g_items_to_compress, $items, 0, -3; // We have -> file1" "file2
+   // The external quote will be added by the caller procedure
+
+
+// ** Actions **
+"_action_extracthere_mono"
+   global $g_item_to_extract, $g_output_path;
+   $g_item_to_extract = <curitem>;
+   $g_output_path = <curpath>;
+   sub "_doextract";
+   
+"_action_extracthere_multi"
+   global $g_output_path;
+   $g_output_path = <curpath>;
+   sub "_doextract_each_first";
+
+"_action_extractfolder_mono"
+   global $g_item_to_extract, $g_output_path;
+   $g_item_to_extract = <curitem>;
+   $g_output_path = "<curpath>\*";
+   sub "_doextract";
+
+"_action_extractfolder_multi"
+   global $g_output_path;
+   $g_output_path = "<curpath>\*";
+   sub "_doextract_each_first";
+
+
+// ** Methodes recursives **
+"_docompress_each_first"
+   global $g_output_path, $g_items_list, $g_items_list_length, $g_items_list_index;
+   $g_items_list = getinfo("SelectedItemsPathNames", "?");
+   $g_items_list_length = getinfo("CountSelected");
+   $g_items_list_index = 1;
+   sub "_docompress_each_recurse";
+   
+"_docompress_each_recurse"
+   // Methode recursive
+   global $g_items_to_compress, $g_items_list, $g_items_list_length, $g_items_list_index, $g_archive_name;
+   
+   // Only 1 item in $g_items_to_compress
+   $g_items_to_compress = gettoken($g_items_list, $g_items_list_index, "?");
+   
+   // Change $g_archive_name to match the filename
+   // We use a regex to suppress the path and only keep the filename
+   regexreplace $g_archive_name, $g_items_to_compress, ".*[\\/]";
+   
+   sub "_docompress";
+   
+   $g_items_list_index = $g_items_list_index + 1;
+   $next_sub = $g_items_list_index <= $g_items_list_length ? "_docompress_each_recurse" : "_donothing";
+   sub $next_sub;
+   
+   
+"_doextract_each_first"
+   global $g_items_list, $g_items_list_length, $g_items_list_index;
+   $g_items_list = getinfo("SelectedItemsPathNames", "?");
+   $g_items_list_length = getinfo("CountSelected");
+   $g_items_list_index = 1;
+   sub "_doextract_each_recurse";
+
+"_doextract_each_recurse"
+   // Methode recursive
+   global $g_item_to_extract, $g_items_list, $g_items_list_length, $g_items_list_index;
+   $g_item_to_extract = gettoken($g_items_list, $g_items_list_index, "?");   
+   sub "_doextract";
+   $g_items_list_index = $g_items_list_index + 1;
+   $next_sub = $g_items_list_index <= $g_items_list_length ? "_doextract_each_recurse" : "_donothing";
+   sub $next_sub;
+
+
+// ** Actions simples **
+"_docompress"
+   global $g_exec, $g_items_to_compress, $g_archive_path, $g_archive_name, $g_archive_type;
+   run """$g_exec"" a -t$g_archive_type ""$g_archive_path\$g_archive_name.$g_archive_type"" -r ""$g_items_to_compress""", , 1;
+
+"_doextract"
+   global $g_exec, $g_output_path, $g_item_to_extract;
+   run """$g_exec"" x -o""$g_output_path"" ""$g_item_to_extract""", , 1;
+   
+"_donothing"

@@ -1,0 +1,247 @@
+/** CONFIG **/
+// 7zip executable
+"_get_exec"
+   global $g_exec;
+   //$g_exec = "<xypath>\..\7-ZipPortable\App\7-Zip\7z.exe";
+   $g_exec = "C:\Program Files\7-Zip beta\7z.exe";
+
+// 7zip option by format (Notice: -r option is unnecessary)
+"_get_7z_add_options"
+   global $g_options;
+   $g_options = "-mx=9 -ms=on -mmt=4";
+   
+"_get_7z_extract_options"
+   global $g_options;
+   $g_options = "-sccUTF-8";
+
+"_get_zip_add_options"
+   global $g_options;
+   $g_options = "";
+   
+"_get_zip_extract_options"
+   global $g_options;
+   $g_options = "-sccUTF-8";
+
+/** MENU **/
+"Zip item(s) : zip"
+   sub "_init";
+   
+   global $g_archive_type;
+   $g_archive_type = "zip";
+   
+   sub "_do_compress_1archive"
+
+"Zip items (1 archive/item) : mzip"
+   sub "_init";
+   
+   global $g_archive_type;
+   $g_archive_type = "zip";
+   
+   sub "_do_compress_Narchives"
+   
+"7z item(s) : 7z"
+   sub "_init";
+   
+   global $g_archive_type;
+   $g_archive_type = "7z";
+   
+   sub "_do_compress_1archive"
+
+"7z items (1 archive/item) : m7z"
+   sub "_init";
+   
+   global $g_archive_type;
+   $g_archive_type = "7z";
+   
+   sub "_do_compress_Narchives"
+-
+
+"Extract here : extract"
+   sub "_init";
+   
+   global $g_list_items, $g_list_length, $g_env_curpath;
+   global $param_extract_path, $param_item;
+   global $param_item_path, $out_item_name;
+   
+   $i = 1;
+   while ($i <= $g_list_length) {
+      $item_path = gettoken($g_list_items, $i, "|");
+     
+      $param_extract_path = "$g_env_curpath";
+      $param_item = $item_path;
+      sub "_do_extract";
+     
+      $i = $i + 1;
+   }
+
+"Extract in <subfolder> : extract_subfolder"
+   sub "_init";
+   
+   global $g_list_items, $g_list_length, $g_env_curpath;
+   global $param_extract_path, $param_item;
+   global $param_item_path, $out_item_name;
+   
+   $i = 1;
+   while ($i <= $g_list_length) {
+      $item_path = gettoken($g_list_items, $i, "|");
+     
+      $param_item_path = $item_path;
+      sub "_get_item_basename";
+      // Return $out_item_name
+     
+      $param_extract_path = "$g_env_curpath\$out_item_name";
+      $param_item = $item_path;
+      sub "_do_extract";
+     
+      $i = $i + 1;
+   }
+
+/** PRIVATE **/
+"_init"
+   sub "_get_exec";
+   sub "_get_list";
+   sub "_get_env";
+   sub "_check";
+   
+"_get_list"
+   // Get selected list items
+   global $g_list_items, $g_list_length;
+   $g_list_items = getinfo("SelectedItemsPathNames", "|");
+   $g_list_length = getinfo("CountSelected");
+   
+   $i = 1;
+   while ($i <= $g_list_length) {
+      $item_path = gettoken($g_list_items, $i, "|");
+      if (exists($item_path) == 2) { // Folder -> Add "\*" to work on folder content
+         replace $g_list_items, $g_list_items, "$item_path|", "$item_path\|";
+      }
+      $i = $i + 1;
+   }
+   
+   substr $g_list_items, $g_list_items, 0, -1; // Delete last separator
+   
+"_get_env"
+   // Get useful environment variables
+   global $g_env_curpath, $g_env_curfolder, $g_env_curbase;
+   $g_env_curpath = <curpath>;
+   $g_env_curfolder = <curfolder>;
+   $g_env_curbase = <curbase>;
+   
+"_check"
+   // Check if parameters are ok
+   global $g_list_length;
+   end $g_list_length <= 0;
+
+"_get_item_basename"
+   // Get a full path in $param_item_path, and returne base in $out_item_name
+   // ex: c:\dir1\dir2\base.ext => base
+   //     c:\dir1\dir2\ => dir2
+   global $param_item_path;
+   global $out_item_name;
+   
+   $out_item_name = $param_item_path;
+   
+   // Detect folder path. Folder path ends with "\" so we have to find if the path ends with a "\"
+   // No reverse find for now, so we add a special character to do the trick
+   $out_item_name = $out_item_name . "{";
+   strpos $is_folder, $out_item_name, "\{";
+   if ($is_folder >= 0) {
+      $is_folder = 1;
+      // Remove special char with last "\"
+      replace $out_item_name, $out_item_name, "\{";
+   } else {
+      $is_folder = 0;
+      // Remove special char
+      replace $out_item_name, $out_item_name, "{";
+   }
+   
+   strpos $last_slash_index, $out_item_name, "\";
+   $last = $last_slash_index;
+   while ($last_slash_index >= 0 && $last_slash_index < strlen($out_item_name)) {
+      strpos $last_slash_index, $out_item_name, "\", $last_slash_index + 1;
+      if ($last_slash_index != -1) {
+         $last = $last_slash_index;
+      }
+   }
+   $last_slash_index = $last;
+   
+   if ($last_slash_index != -1) {
+      substr $out_item_name, $out_item_name, $last_slash_index + 1;
+   }
+   
+   if ($is_folder == 0) {
+      // Folder -> Do nothings
+      // File -> Remove extension
+      strpos $last_dot_index, $out_item_name, ".";
+      $last = $last_dot_index;
+      while ($last_dot_index >= 0 && $last_dot_index < strlen($out_item_name)) {
+         strpos $last_dot_index, $out_item_name, ".", $last_dot_index + 1;
+         if ($last_dot_index != -1) {
+            $last = $last_dot_index;
+         }
+      }
+      $last_dot_index = $last;
+     
+      if ($last_dot_index > 0) {
+         strlen $length, $out_item_name;
+         $last_dot_right = $last_dot_index - $length;
+         substr $out_item_name, $out_item_name, 0, $last_dot_right;
+      }
+   }
+   
+"_do_compress_1archive"
+   // 1 archive for all items
+   global $g_list_items, $g_list_length, $g_env_curpath, $g_env_curfolder, $g_env_curbase;
+   global $param_items, $param_archive_path, $param_archive_name;
+   
+   $param_archive_path = $g_env_curpath;
+   
+   if ($g_list_length == 1) {
+      // 1 item -> archive name = item name
+      $param_archive_name = $g_env_curbase;
+     
+   } else {
+      // N items -> archive name = folder name
+      $param_archive_name = $g_env_curfolder;
+   }
+   
+   replace $param_items, $g_list_items, "|", '" "';
+   sub "_do_compress";
+
+"_do_compress_Narchives"
+   // N archives : 1 archive per item
+   global $g_list_items, $g_list_length, $g_env_curpath;
+   global $param_items, $param_archive_path, $param_archive_name;
+   global $param_item_path, $out_item_name;
+   
+   $param_archive_path = $g_env_curpath;   
+   
+   $i = 1;
+   while ($i <= $g_list_length) {
+      $item_path = gettoken($g_list_items, $i, "|");
+     
+      $param_item_path = $item_path;
+      sub "_get_item_basename";
+      // Return $out_item_name
+     
+      $param_archive_name = $out_item_name;
+      $param_items = $item_path;
+      sub "_do_compress";
+     
+      $i = $i + 1;
+   }
+
+// ** Simple actions **
+"_do_compress"
+   global $g_exec, $g_archive_type, $g_options;
+   global $param_items, $param_archive_path, $param_archive_name;
+   sub "_get_" . $g_archive_type . "_add_options";
+   run """$g_exec"" a -t$g_archive_type ""$param_archive_path\$param_archive_name.$g_archive_type"" $g_options ""$param_items""", , 0;
+
+"_do_extract"
+   global $g_exec, $g_options;
+   global $param_extract_path, $param_item;
+   // TODO Detect archive type
+   $g_archive_type = "7z";
+   sub "_get_" . $g_archive_type . "_extract_options";
+   run """$g_exec"" x -o""$param_extract_path"" $g_options ""$param_item""", , 0;

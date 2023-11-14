@@ -1,0 +1,4 @@
+End (getinfo("CountSelected")==0),  "No file(s) selected!";
+   load report('moveto ".\" .
+   substr("{Basename}", 0, 1), "{Fullname}"; ', 1),,s;
+

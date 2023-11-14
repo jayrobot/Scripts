@@ -1,0 +1,35 @@
+"Move files to Initial SubFolder"
+
+  //Get list with fullnames of selected files:
+  $FILES = report("{FullName}<crlf>", 1);
+
+  $NewPathMain = ".\";
+
+  $LOOP = 1;
+  while(1)
+  {
+    //For Each File in Files Do:
+    $file = gettoken($FILES, $LOOP, "<crlf>");
+    if ($file==""){break;}
+    
+     //For the initial SubFolder we need the file name:
+     $NamePart = regexreplace($file, ".+\\(.+)", "$1");
+
+     //For the initial SubFolder we need first sign of the file name:
+     $SubFolder = substr($NamePart, 0, 1);
+
+     //If first sign is an lower-case char make it upper-case:
+     if(asc($SubFolder)>=97 && <= 122){$SubFolder = chr(asc($SubFolder)-32);}
+
+     //Build up the full path to the initial SubFolder:
+     $NewPath = $NewPathMain\$SubFolder;
+
+     //If the initial SubFolder does not exist create it:
+     if (exists($NewPath)!=2){new $NewPath, dir;}
+
+     //Attention! Ready! Action:
+     moveto $NewPath, $file;
+   
+  incr $LOOP; //NEXT iteration
+  }
+

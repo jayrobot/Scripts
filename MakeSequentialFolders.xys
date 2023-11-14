@@ -1,0 +1,8 @@
+// get start integer
+ $startint = input("Enter Starting #", "This script creates folders named disc<nn> from start to end #", , "s");
+ $endint = input("Enter Ending #", , , "s"); 
+ while ($startint <= $endint) {
+	 $newfoldername = "Disc".$startint;
+ 	 $startint++;
+	 new ("$newfoldername", "dir"); // Create new folder from input
+ }

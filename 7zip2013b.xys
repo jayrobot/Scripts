@@ -1,0 +1,145 @@
+"_Initialize";
+  //this has been tested on win7 64bit  and XP
+        perm $p_zip = '"C:\Program Files\7-Zip\7z.exe"' ;
+        perm $p_ZipFM ="C:\Program Files\7-Zip\7zFM.exe";
+        perm $p_note  = '"C:\Program Files (x86)\Notepad++\Notepad++.exe"';
+"&Open <curname> : open"
+    openwith $p_ZipFM;
+-
+"&List all this folder"
+      selfilter"*.rar ; *.7z ;  *.cab ; *.gz ; *.zip";
+       $SelectedItems = get("SelectedItemsNames","|");
+        foreach($Item, $SelectedItems,"|") {
+         run('cmd /c "'.$p_zip.' l "'.$Item.'" >>"'.<curfolder>.".txt".'"') ;
+         wait 500;
+          }
+"List  <curname> single"
+        run'cmd /c "'.$p_zip.' l "'.<curitem>.'" >"'.<curitem>.".txt".'"';
+-
+"7-Zip and move into <curbase>.&7z and move : 7zm"
+       $a =  get("path", i);
+ 	   openwith ''.$p_zip.' a -t7z "'.$a\.<curbase>.".7z".'"';
+"Zip and move into <curbase>.&zip and move : zipm"
+       $a =  get("path", i);
+           openwith''.$p_zip.' a -tzip "'.$a\.<curbase>.".zip".'"';
+-
+"Compress into <curbase>.&zip : zip"
+     focus;
+     #113;
+     focus;
+     $curbase = <clipboard>;
+     $l = strlen ($curbase);
+     $p = strpos ($curbase, <crlf>);
+    $curbase = regexreplace ($curbase,"^-1$","$l");
+     if ($p =="-1") { $p = $l ; }  // if single item selected
+     $curbase = substr ($curbase, 0, $p);
+     $curbase = replace ($curbase,"","_");
+    set $curbase,"$curbase.zip";
+   //Compress file with .zip. Name= base of file.
+               openwith ''.$p_zip.' a -tzip "'.$curbase.'"';
+"Compress into <curfolder>.&zip : zipf"
+          openwith ''.$p_zip.' a -tzip "'.<curfolder>.".zip".'"';
+
+"Compress into <curbase>.&7z : 7z"
+     focus;
+     #113;
+     focus;
+     $curbase= <clipboard>;
+     $l = strlen ($curbase);
+     $p = strpos ($curbase, <crlf>);
+    $curbase = regexreplace ($curbase,"^-1$","$l");
+    if ($p =="-1") { $p = $l ; }  // if single item selected
+     $curbase = substr ($curbase, 0, $p);
+     $curbase = replace ($curbase,"","_");
+    set $curbase,"$curbase.7z";
+     //Compress file with .7z. Name= base of file.
+             openwith ''.$p_zip.' a -t7z "'.$curbase.'"';
+-
+"&Extract contents of <curname> here (prompts) : ext"
+     openwith"$p_zip x";
+"&Extract contents of <curname> to folder <curbase> (overwrite NO warning) : extf"
+     openwith"$p_zip x -y -o*  <items>"
+"&Extract contents of <curname> to other pane (overwrite NO warning) : extop"
+          $a =  get("path", i);
+    openwith''.$p_zip.' x -y -o"'.$a.'" <items>' ;
+"&Extract contents of <curname> to <curbase> other pane (overwrite NO warning) : extfop"
+          $a =  get("path", i);
+      openwith''.$p_zip.' x -y -o"'.$a\<curbase>\.'"  <items>' ;
+"&Extract contents of <curname> here w renumber existing : extre"
+    //Extract content to folder Name= base of zip. aot= If files exist, autonumber new files.
+          openwith"$p_zip x -aot"
+"&Extract contents of <curname> to folder <curbase> w renumber existing : extfre"
+     openwith"$p_zip x -y -o* -aot <items>"
+"&Extract contents of <curname> to other pane w renumber existing : extopre"
+          $a =  get("path", i);
+    openwith''.$p_zip.' x -y -o"'.$a.'" -aot <items>' ;
+"&Extract contents of <curname> to other pane w renumber archive file : extopra"
+          $a =  get("path", i);
+    openwith''.$p_zip.' x -y -o"'.$a.'" -aou <items>' ;
+"&Extract contents of <curname> to <curbase> other pane w renumber archive file : extfopra"
+          $a =  get("path", i);
+    openwith''.$p_zip.' x -y -o"'.$a\<curbase>\.'" -aou <items>' ;
+-
+"Compress into <curbase>.zi&p (password protection) : pzip"
+     focus;
+    #113;
+    focus;
+    $curbase= <clipboard>;
+    $l = strlen ($curbase);
+    $p = strpos ($curbase, <crlf>);
+   $curbase = regexreplace ($curbase,"^-1$","$l");
+     if ($p =="-1") { $p = $l ; }  // if single item selected
+    $curbase = substr ($curbase, 0, $p);
+    $curbase = replace ($curbase," ","_");
+   set $curbase,"$curbase.zip";
+    $i = input  (Input password for zipfile, password);
+   //Compress with .zip and password protect archive.
+      openwith''.$p_zip.' a -tzip "'.$curbase.'" -p"'.$i.'"';
+"Compress into <curbase>.7z (password protection) : p7z"
+    focus;
+    #113;
+    focus;
+    $curbase= <clipboard>;
+    $l = strlen ($curbase);
+    $p = strpos ($curbase, <crlf>);
+   $curbase = regexreplace ($curbase,"^-1$","$l");
+    if ($p =="-1") { $p = $l ; }  // if single item selected
+    $curbase = substr ($curbase, 0, $p);
+    $curbase = replace ($curbase,"","_");
+   set $curbase,"$curbase.7z";
+    $i = input  (Input password for zipfile, password);
+   //Compress with 7z and password protect and encrypt archive headers.
+     openwith''.$p_zip.' a -t7z "'.$curbase.'" -p"'.$i.'" -mhe'
+"?Set Password to <curname> zip : zp"
+         set $file, <curbase>;
+         openwith''.$p_zip.' x -y -o"'.<curbase>.'" "'.<items>.'"' ;
+         msg"wait until extract",1;
+         focus ;
+         filter $file* ;
+          delete 0 , 0 ;
+          sortby created, d ;
+          sel 1 ;
+          sub pzip ;
+          filter $file ;
+"?Set Password to <curbase> .7z : z7"
+      set $file, <curbase>;
+      openwith''.$p_zip.' x -aou -o"'.<curbase>.'" "'.<items>.'"' ;
+      msg"wait until extract",1;
+      focus;
+      filter $file*;
+      delete 0, 0 ;
+      sortby created, d;
+      sel 1;
+      sub p7z;
+      filter $file;		  
+-
+"Edit script : edit"
+   $ScriptFile= self ("file");
+	    run $p_note "$ScriptFile" ,w;
+"Choose scripts file to edit" $file = inputfile  (<xyscripts>\, xys, Select Scripts File); open $file
+-
+"CANCEL"
+"_Terminate";
+                 unset $p_ZipFM;
+                 unset $p_zip;
+                 unset $p_note;
