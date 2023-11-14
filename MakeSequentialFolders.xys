@@ -1,5 +1,4 @@
 // $mode - "int" or "alpha"
-// some little test scripts
 "Create folders with sequential numbers with optional text prefix or suffix"
 	// get prefixText 
 	$prefixText = input("Prefix (start with '[') or Suffix (']')"
@@ -16,7 +15,7 @@
  		new ("$newfoldername", "dir"); // Create new folder from input
 	}
 
-"Create folders with sequential single letters (ie, a to z)"
+"Create folders with sequential single letters (ie, A to Z inclusive)"
 	$curLetter = "A";
 	while (asc($curLetter) <= asc("Z")) {
  		new ("$curLetter", "dir"); 				// Create new folder
