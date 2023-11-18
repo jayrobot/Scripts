@@ -12,7 +12,7 @@
 	// 					, "This script moves folders into a reorganized folder into a sub-folder with the first letter of the original folder name."
 	// 					, 
 	// 					, "s");
-	$newPathMain = inputfolder("_ReOrg"
+	$newPathMain = inputfolder("..\..\_TradeReOrg"
 								, "Enter path to reorganization folder");
 
 	$loop = 1;
@@ -31,18 +31,23 @@
 
 		$ascSubFolder = asc($subFolder);
 
-		//If first character is lower-case, make it upper:
+		//If first character is lower-case, make it upper
 		if($ascSubFolder >= 97 && $ascSubFolder <= 122)
 			{$subFolder = chr($ascSubFolder-32);}
 
-		if($ascSubFolder < 65 || $ascSubFolder > 90)
+		//If first character not a letter, use special folder name
+		elseif($ascSubFolder < 65 || $ascSubFolder > 90)
 			{$subFolder = "#-etc";}
+
+		//If various artists folder, use "V A"
+		elseif($namePart == "V A")
+			{$subFolder = $namePart}
 
 		//Build up the full path to the initial SubFolder:
 		$newPath = "$newPathMain\$subFolder";
 
 		//If the initial SubFolder does not exist create it:
-		if (exists($newPath)!=2)
+		if (exists($newPath) != 2)
 			{new($newPath, "dir");}
 
 		//Attention! Ready! Action:
@@ -51,4 +56,4 @@
 		incr $loop; //NEXT iteration
 	}
 
-sound "C:\Users\jr286576\Music\Jay-Scream.wav"
+	sound "C:\Users\jr286576\Music\Jay-Scream.wav"
