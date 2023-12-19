@@ -1,0 +1,83 @@
+"Move files to Initial SubFolder"
+
+	// exit the script if nothing selected, or if any files are selected
+	End (getinfo("CountSelected") == 0),  "No folder(s) selected!";
+	End (get("SelExt") != ""),  "Only folder(s) can be selected!";
+
+	//Get list with fullnames of selected files:
+	$files = report("{FullName}<crlf>", 1);
+
+	// $newPathMain = pathreal($files) + "\_ReOrg";
+	// $newPathMain = input("Enter path to reorganization folder"
+	// 					, "This script moves folders into a reorganized folder into a sub-folder with the first letter of the original folder name."
+	// 					, 
+	// 					, "s");
+	$newPathMain = inputfolder(".\_ReOrg"
+								, "Enter path to reorganization folder");
+
+	$loop = 1;
+	while(1)
+	{
+		//For Each File in Files Do:
+		$file = gettoken($files, $loop, "<crlf>");
+		if ($file=="")
+			{break;}
+
+		//For the initial SubFolder we need the file name:
+		$namePart = regexreplace($file, ".+\\(.+)", "$1");
+
+		//For the initial SubFolder we need first sign of the file name:
+		$subFolder = substr($namePart, 0, 1);
+
+		$ascSubFolder = asc($subFolder);
+
+		//If first character is lower-case, make it upper
+		if($ascSubFolder >= 97 && $ascSubFolder <= 122)
+			{$subFolder = chr($ascSubFolder-32);}
+
+		//If first character not a letter, use special folder name
+		elseif($ascSubFolder < 65 || $ascSubFolder > 90)
+			{$subFolder = "#-etc";}
+
+		//If various artists folder, use "V A"
+		elseif($namePart == "V A")
+			{$subFolder = ""}
+		
+		elseif($ascSubFolder >= 65 && $ascSubFolder <= 67)
+			{$subFolder = "a-c"}
+		
+		elseif($ascSubFolder >= 68 && $ascSubFolder <= 70)
+			{$subFolder = "d-f"}
+		
+		elseif($ascSubFolder >= 71 && $ascSubFolder <= 73)
+			{$subFolder = "g-i"}
+		
+		elseif($ascSubFolder >= 74 && $ascSubFolder <= 76)
+			{$subFolder = "j-l"}
+		
+		elseif($ascSubFolder >= 77 && $ascSubFolder <= 79)
+			{$subFolder = "m-o"}
+		
+		elseif($ascSubFolder >= 80 && $ascSubFolder <= 82)
+			{$subFolder = "p-r"}
+		
+		elseif($ascSubFolder >= 83 && $ascSubFolder <= 85)
+			{$subFolder = "s-u"}
+		
+		elseif($ascSubFolder >= 86 && $ascSubFolder <= 90)
+			{$subFolder = "v-z"}
+		
+		//Build up the full path to the initial SubFolder:
+		$newPath = "$newPathMain\$subFolder";
+
+		//If the initial SubFolder does not exist create it:
+		if (exists($newPath) != 2)
+			{new($newPath, "dir");}
+
+		//Attention! Ready! Action:
+		moveto($newPath, $file);
+
+		incr $loop; //NEXT iteration
+	}
+
+	sound "C:\Users\jr286576\Music\Jay-Scream.wav"
