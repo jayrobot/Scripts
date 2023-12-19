@@ -12,7 +12,7 @@
 	// 					, "This script moves folders into a reorganized folder into a sub-folder with the first letter of the original folder name."
 	// 					, 
 	// 					, "s");
-	$newPathMain = inputfolder("..\..\_TradeReOrg"
+	$newPathMain = inputfolder("..\_ReOrg"
 								, "Enter path to reorganization folder");
 
 	$loop = 1;
@@ -41,7 +41,7 @@
 
 		//If various artists folder, use "V A"
 		elseif($namePart == "V A")
-			{$subFolder = $namePart}
+			{$subFolder = ""}
 
 		//Build up the full path to the initial SubFolder:
 		$newPath = "$newPathMain\$subFolder";
