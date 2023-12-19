@@ -1,0 +1,24 @@
+"Flatten Folders"
+
+	// exit the script if nothing selected, or if any files are selected
+	End (getinfo("CountSelected") == 0),  "No folder(s) selected!";
+	End (get("SelExt") != ""),  "Only folder(s) can be selected!";
+
+	//Get list with fullnames of selected files:
+	$files = report("{FullName}<crlf>", 1);
+
+	$loop = 1;
+	while(1)
+	{
+		//For Each File in Files Do:
+		$file = gettoken($files, $loop, "<crlf>");
+		if ($file=="")
+			{break;}
+
+		//Attention! Ready! Action:
+		flattenfolder($file, "n");
+
+		incr $loop; //NEXT iteration
+	}
+
+	sound "C:\Users\jr286576\Music\Jay-Scream.wav"
