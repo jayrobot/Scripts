@@ -10,7 +10,14 @@
 	$startint = input("Enter Starting #", "This script creates folders named disc<nn> from start to end #", , "s");
 	$endint = input("Enter Ending #", , , "s"); 
 	while ($startint <= $endint) {
-		$newfoldername = "Disc".$startint;
+		if (substr($prefixText,0,1) == "[") {
+			$newfoldername = substr($prefixText, 1) .$startint;
+		} elseif (substr($prefixText,0,1) == "]") {
+			$newfoldername = $startint.substr($prefixText, 1);
+		} else {
+			$newfoldername = "Disc".$startint;
+		}
+		
 		$startint++;
  		new ("$newfoldername", "dir"); // Create new folder from input
 	}
